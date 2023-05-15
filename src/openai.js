@@ -25,7 +25,8 @@ const run = async () => {
     });
 
     const json = JSON.parse(response.data.choices[0].text);
-    console.log(json.answer);
+    const result = await json.answer;
+    return result;
 };
 
-run();
+module.exports = run;
