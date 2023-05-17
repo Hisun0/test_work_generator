@@ -17212,8 +17212,8 @@
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],2:[function(require,module,exports){
-const getValuesFromTask = require('../math_solution/variant.js');
-const firstTask = require('../math_solution/math.js');
+const { getValuesFromTask } = require('../math_solution/variant.js');
+const { firstTask } = require('../math_solution/math.js');
 
 const valuesFromTask = getValuesFromTask('4');
 const obj = firstTask(valuesFromTask);
@@ -17231,9 +17231,6 @@ new Chartist.Line('.chart', data);
 
 },{"../math_solution/math.js":3,"../math_solution/variant.js":4}],3:[function(require,module,exports){
 const _ = require('lodash');
-const getValuesFromTask = require('./variant.js');
-
-const valuesFromTask = getValuesFromTask('4');
 
 const getChanceWhenAllNegative = (negativeChance) => Number((negativeChance ** 3).toFixed(3));
 
@@ -17251,6 +17248,20 @@ const getChanceWhenTwoPositive = (positiveChance, negativeChance) => {
 
 const getChanceWhenAllPositive = (positiveChance) => Number((positiveChance ** 3).toFixed(3));
 
+const firstTaskForPdf = (taskNums) => {
+  const [ positiveChance, negativeChance ] = taskNums;
+  const chanceWhenAllNegative = getChanceWhenAllNegative(negativeChance);
+  const chanceWhenOnePositive = getChanceWhenOnePositive(positiveChance, negativeChance);
+  const chanceWhenTwoPositive = getChanceWhenTwoPositive(positiveChance, negativeChance);
+  const chanceWhenAllPositive = getChanceWhenAllPositive(positiveChance);
+  return {
+    firstEvent: `${negativeChance} * ${negativeChance} * ${negativeChance} = ${chanceWhenAllNegative}`,
+    secondEvent: `${positiveChance} * ${negativeChance} * ${negativeChance} + ${negativeChance} * ${positiveChance} * ${negativeChance} + ${negativeChance} * ${negativeChance} * ${positiveChance} = ${chanceWhenOnePositive}`,
+    thirdEvent: `${positiveChance} * ${positiveChance} * ${negativeChance} + ${positiveChance} * ${negativeChance} * ${positiveChance} + ${negativeChance} * ${positiveChance} * ${positiveChance} = ${chanceWhenTwoPositive}`,
+    fourthEvent: `${positiveChance} * ${positiveChance} * ${positiveChance} = ${chanceWhenAllPositive}`,
+  };
+};
+
 const firstTask = (taskNums) => {
   const [ positiveChance, negativeChance ] = taskNums;
   const chanceWhenAllNegative = getChanceWhenAllNegative(negativeChance);
@@ -17266,49 +17277,86 @@ const firstTask = (taskNums) => {
 };
 
 const calculateMathWait = (data) => {
-  const result = Object.entries(data).reduce((acc, [ attempt, value ]) => {
+  const arrWithMultiplication = Object.entries(data).reduce((acc, [ attempt, value ]) => {
     acc.push(attempt * value);
     return acc;
   }, []);
-  return (_.sum(result)).toFixed(3);
+  const result = (_.sum(arrWithMultiplication)).toFixed(3);
+  return result;
 };
 
-const calculateDispertion = (data) => {
+const calculateDispersion = (data) => {
   const mathWait = calculateMathWait(data);
   const squares = Object.entries(data).reduce((acc, [ attempt, value ]) => {
     acc.push((attempt ** 2) * value);
     return acc;
   }, []);
   const sumSquares = _.sum(squares);
-  return (sumSquares - (mathWait ** 2)).toFixed(3);
+  const result = (sumSquares - (mathWait ** 2)).toFixed(3);
+  return result;
 };
 
-const calculateStandartDeviation = (dispertion) => (Math.sqrt(dispertion)).toFixed(3);
-
-const thirdTask = () => {
-  return;
+const calculateStandartDeviation = (dispersion) => {
+  const result = (Math.sqrt(dispersion)).toFixed(3);
+  return result;
 };
 
-console.log(firstTask(valuesFromTask))
+const makeDistributionOfARandomVariable = (entries) => {
+  const result = {};
+  let i = 0;
+  const acc = [];
+  result[0] = '0 если x ≤ 0';
+  for (let [ , value ] of entries) {
+    if (result.length === 4) break;
+    acc.push(value);
+    result[i + 1] = `${(_.sum(acc)).toFixed(3)} если ${i} < x ≤ ${i + 1}`;
+    i += 1;
+  }
+  result[4] = '1 если x > 3';
+  return result
+};
 
-module.exports = firstTask;
+const thirdTask = (data) => {
+  const entries = Object.entries(data);
+  const distributionResult = makeDistributionOfARandomVariable(entries);
+  const numericalChar = {
+    mathWait: calculateMathWait(data),
+    dispersion: calculateDispersion(data),
+    standartDeviation: calculateStandartDeviation(calculateDispersion(data)),
+  };
+  return [distributionResult, numericalChar];
+};
 
-},{"./variant.js":4,"lodash":1}],4:[function(require,module,exports){
+module.exports = {
+  firstTask,
+  firstTaskForPdf,
+  thirdTask,
+  calculateDispersion,
+  calculateMathWait,
+  calculateStandartDeviation,
+};
+
+},{"lodash":1}],4:[function(require,module,exports){
+const variant = '2';
+
 const getValuesFromTask = (variant) => {
   switch (variant) {
     case '1':
-        return [1 / 6, 5 / 6];
+      return [1 / 6, 5 / 6];
     case '2':
-        return [0.4, 0.6];
+      return [0.4, 0.6];
     case '3':
-        return [0.88, 0.12];
+      return [0.88, 0.12];
     case '4':
-        return [0.5, 0.5];
+      return [0.5, 0.5];
     default:
-        throw new Error('Варианта не существует!');
+      throw new Error('Варианта не существует!');
   }
 };
 
-module.exports = getValuesFromTask;
+module.exports = {
+  getValuesFromTask,
+  variant,
+};
 
 },{}]},{},[2]);

@@ -1,5 +1,5 @@
-const getValuesFromTask = require('../math_solution/variant.js');
-const firstTask = require('../math_solution/math.js');
+const { getValuesFromTask } = require('../math_solution/variant.js');
+const { firstTask } = require('../math_solution/math.js');
 
 const valuesFromTask = getValuesFromTask('4');
 const obj = firstTask(valuesFromTask);

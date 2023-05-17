@@ -1,7 +1,4 @@
 const _ = require('lodash');
-const getValuesFromTask = require('./variant.js');
-
-const valuesFromTask = getValuesFromTask('4');
 
 const getChanceWhenAllNegative = (negativeChance) => Number((negativeChance ** 3).toFixed(3));
 
@@ -19,6 +16,20 @@ const getChanceWhenTwoPositive = (positiveChance, negativeChance) => {
 
 const getChanceWhenAllPositive = (positiveChance) => Number((positiveChance ** 3).toFixed(3));
 
+const firstTaskForPdf = (taskNums) => {
+  const [ positiveChance, negativeChance ] = taskNums;
+  const chanceWhenAllNegative = getChanceWhenAllNegative(negativeChance);
+  const chanceWhenOnePositive = getChanceWhenOnePositive(positiveChance, negativeChance);
+  const chanceWhenTwoPositive = getChanceWhenTwoPositive(positiveChance, negativeChance);
+  const chanceWhenAllPositive = getChanceWhenAllPositive(positiveChance);
+  return {
+    firstEvent: `${negativeChance} * ${negativeChance} * ${negativeChance} = ${chanceWhenAllNegative}`,
+    secondEvent: `${positiveChance} * ${negativeChance} * ${negativeChance} + ${negativeChance} * ${positiveChance} * ${negativeChance} + ${negativeChance} * ${negativeChance} * ${positiveChance} = ${chanceWhenOnePositive}`,
+    thirdEvent: `${positiveChance} * ${positiveChance} * ${negativeChance} + ${positiveChance} * ${negativeChance} * ${positiveChance} + ${negativeChance} * ${positiveChance} * ${positiveChance} = ${chanceWhenTwoPositive}`,
+    fourthEvent: `${positiveChance} * ${positiveChance} * ${positiveChance} = ${chanceWhenAllPositive}`,
+  };
+};
+
 const firstTask = (taskNums) => {
   const [ positiveChance, negativeChance ] = taskNums;
   const chanceWhenAllNegative = getChanceWhenAllNegative(negativeChance);
@@ -34,29 +45,61 @@ const firstTask = (taskNums) => {
 };
 
 const calculateMathWait = (data) => {
-  const result = Object.entries(data).reduce((acc, [ attempt, value ]) => {
+  const arrWithMultiplication = Object.entries(data).reduce((acc, [ attempt, value ]) => {
     acc.push(attempt * value);
     return acc;
   }, []);
-  return (_.sum(result)).toFixed(3);
+  const result = (_.sum(arrWithMultiplication)).toFixed(3);
+  return result;
 };
 
-const calculateDispertion = (data) => {
+const calculateDispersion = (data) => {
   const mathWait = calculateMathWait(data);
   const squares = Object.entries(data).reduce((acc, [ attempt, value ]) => {
     acc.push((attempt ** 2) * value);
     return acc;
   }, []);
   const sumSquares = _.sum(squares);
-  return (sumSquares - (mathWait ** 2)).toFixed(3);
+  const result = (sumSquares - (mathWait ** 2)).toFixed(3);
+  return result;
 };
 
-const calculateStandartDeviation = (dispertion) => (Math.sqrt(dispertion)).toFixed(3);
-
-const thirdTask = () => {
-  return;
+const calculateStandartDeviation = (dispersion) => {
+  const result = (Math.sqrt(dispersion)).toFixed(3);
+  return result;
 };
 
-console.log(firstTask(valuesFromTask))
+const makeDistributionOfARandomVariable = (entries) => {
+  const result = {};
+  let i = 0;
+  const acc = [];
+  result[0] = '0 если x ≤ 0';
+  for (let [ , value ] of entries) {
+    if (result.length === 4) break;
+    acc.push(value);
+    result[i + 1] = `${(_.sum(acc)).toFixed(3)} если ${i} < x ≤ ${i + 1}`;
+    i += 1;
+  }
+  result[4] = '1 если x > 3';
+  return result
+};
 
-module.exports = firstTask;
+const thirdTask = (data) => {
+  const entries = Object.entries(data);
+  const distributionResult = makeDistributionOfARandomVariable(entries);
+  const numericalChar = {
+    mathWait: calculateMathWait(data),
+    dispersion: calculateDispersion(data),
+    standartDeviation: calculateStandartDeviation(calculateDispersion(data)),
+  };
+  return [distributionResult, numericalChar];
+};
+
+module.exports = {
+  firstTask,
+  firstTaskForPdf,
+  thirdTask,
+  calculateDispersion,
+  calculateMathWait,
+  calculateStandartDeviation,
+};
