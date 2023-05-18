@@ -1,4 +1,4 @@
-const variant = '2';
+const variant = '3';
 
 const getValuesFromTask = (variant) => {
   switch (variant) {

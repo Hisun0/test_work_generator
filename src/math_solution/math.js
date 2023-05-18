@@ -61,7 +61,7 @@ const calculateDispersion = (data) => {
   }, []);
   const sumSquares = _.sum(squares);
   const result = (sumSquares - (mathWait ** 2)).toFixed(3);
-  return result;
+  return [result, sumSquares];
 };
 
 const calculateStandartDeviation = (dispersion) => {
@@ -89,8 +89,8 @@ const thirdTask = (data) => {
   const distributionResult = makeDistributionOfARandomVariable(entries);
   const numericalChar = {
     mathWait: calculateMathWait(data),
-    dispersion: calculateDispersion(data),
-    standartDeviation: calculateStandartDeviation(calculateDispersion(data)),
+    dispersion: calculateDispersion(data)[0],
+    standartDeviation: calculateStandartDeviation(calculateDispersion(data)[0]),
   };
   return [distributionResult, numericalChar];
 };
